@@ -2,16 +2,15 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MessageItem from '@/components/MessageItem.vue'
+import useMessages from '@/stores/messages.js'
 
 const route = useRoute()
+const messagesStore = useMessages()
 
 const end = ref(null)
 const channelId = ref(null)
 const title = ref('')
 const people = reactive([
-  { id: 1, name: 'Tú', avatar: '/avatars/avatar.jpg' },
-  { id: 2, name: 'Jason', avatar: '/avatars/avatar-02.jpg' },
-  { id: 3, name: 'Janet', avatar: '/avatars/avatar-03.jpg' }
 ])
 const messages = reactive([
   { id: 1, author: 1, message: 'Hola 👀', timestamp: new Date().toLocaleTimeString() },
@@ -27,7 +26,7 @@ const messages = reactive([
   { id: 11, author: 1, message: 'Pues, ¡acabamos de lanzar los nuevos cursos de Vue.js!', timestamp: new Date().toLocaleTimeString() },
 ])
 
-const messagesView = computed(() => messages.map((message) => {
+const messagesView = computed(() => messagesStore.findMessagesByChannelId(channelId.value).map((message) => {
   const author = people.find((p) => p.id === message.author)
   if (!author) return message;
     return {
@@ -46,7 +45,7 @@ const scrollToBottom = () => {
 watch(
   () => route.params.id,
   (id) => {
-    channelId.value = id
+    channelId.value = parseInt(id)
     scrollToBottom()
   },
   { immediate: true }

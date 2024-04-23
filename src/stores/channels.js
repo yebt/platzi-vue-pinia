@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import useMessagesStore from '@/stores/messages.js'
 
 export default defineStore(
   // the id of the store is main -> for global, module_name-> for module
@@ -14,5 +15,13 @@ export default defineStore(
         { id: 6, name: "Atención a clientes", messages: 120 },
       ],
     }),
+    getters: {
+      getChannels: (state) => (search) => {
+        const messageStore = useMessagesStore()
+        return state.channels.filter((chnnl) =>
+          chnnl.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+        ).map((chnnl) => ({ ...chnnl, messages: messageStore.countUnreadMessagesByChannelId(chnnl.id) }));
+      },
+    },
   }
 );
