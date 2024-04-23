@@ -2,32 +2,38 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MessageItem from '@/components/MessageItem.vue'
-import useMessages from '@/stores/messages.js'
+import useMessagesStore from '@/stores/messages.js'
+import useContactsStore from '@/stores/contacts.js'
+import useChannelStore from '@/stores/channels.js'
 
 const route = useRoute()
-const messagesStore = useMessages()
+const messagesStore = useMessagesStore()
+const contactStore = useContactsStore()
+const channelStore = useChannelStore()
 
 const end = ref(null)
 const channelId = ref(null)
-const title = ref('')
-const people = reactive([
-])
-const messages = reactive([
-  { id: 1, author: 1, message: 'Hola 👀', timestamp: new Date().toLocaleTimeString() },
-  { id: 2, author: 2, message: 'Holaaa!!!', timestamp: new Date().toLocaleTimeString() },
-  { id: 3, author: 3, message: 'Hola a todo el mundo 😊', timestamp: new Date().toLocaleTimeString() },
-  { id: 4, author: 3, message: '¿Cómo están?', timestamp: new Date().toLocaleTimeString() },
-  { id: 5, author: 1, message: 'Todo muy bien :D', timestamp: new Date().toLocaleTimeString() },
-  { id: 6, author: 2, message: 'Si, todo bien.', timestamp: new Date().toLocaleTimeString() },
-  { id: 7, author: 1, message: 'Oigan, les escribo para contarles algo... 😌', timestamp: new Date().toLocaleTimeString() },
-  { id: 8, author: 3, message: 'A vers 👀', timestamp: new Date().toLocaleTimeString() },
-  { id: 9, author: 2, message: 'Ahhhh!!', timestamp: new Date().toLocaleTimeString() },
-  { id: 10, author: 2, message: '¡Cuenta ese chismesito yaaaa!', timestamp: new Date().toLocaleTimeString() },
-  { id: 11, author: 1, message: 'Pues, ¡acabamos de lanzar los nuevos cursos de Vue.js!', timestamp: new Date().toLocaleTimeString() },
-])
+const message = ref('')
+
+// const title = ref('')
+// const people = reactive([
+// ])
+// const messages = reactive([
+//   { id: 1, author: 1, message: 'Hola 👀', timestamp: new Date().toLocaleTimeString() },
+//   { id: 2, author: 2, message: 'Holaaa!!!', timestamp: new Date().toLocaleTimeString() },
+//   { id: 3, author: 3, message: 'Hola a todo el mundo 😊', timestamp: new Date().toLocaleTimeString() },
+//   { id: 4, author: 3, message: '¿Cómo están?', timestamp: new Date().toLocaleTimeString() },
+//   { id: 5, author: 1, message: 'Todo muy bien :D', timestamp: new Date().toLocaleTimeString() },
+//   { id: 6, author: 2, message: 'Si, todo bien.', timestamp: new Date().toLocaleTimeString() },
+//   { id: 7, author: 1, message: 'Oigan, les escribo para contarles algo... 😌', timestamp: new Date().toLocaleTimeString() },
+//   { id: 8, author: 3, message: 'A vers 👀', timestamp: new Date().toLocaleTimeString() },
+//   { id: 9, author: 2, message: 'Ahhhh!!', timestamp: new Date().toLocaleTimeString() },
+//   { id: 10, author: 2, message: '¡Cuenta ese chismesito yaaaa!', timestamp: new Date().toLocaleTimeString() },
+//   { id: 11, author: 1, message: 'Pues, ¡acabamos de lanzar los nuevos cursos de Vue.js!', timestamp: new Date().toLocaleTimeString() },
+// ])
 
 const messagesView = computed(() => messagesStore.findMessagesByChannelId(channelId.value).map((message) => {
-  const author = people.find((p) => p.id === message.author)
+  const author = contactStore.getContactById( message.author)
   if (!author) return message;
     return {
     ...message,
@@ -35,6 +41,11 @@ const messagesView = computed(() => messagesStore.findMessagesByChannelId(channe
     self: author.id === 1
   }
 }))
+
+const sendMessage = () => {
+  messagesStore.addMes0sage(channelId.value, message.value)
+  message.value = ''
+}
 
 const scrollToBottom = () => {
   end.value?.scrollIntoView({
@@ -57,11 +68,11 @@ scrollToBottom()
 <template>
   <div class="messages">
     <header>
-      <h2>{{ title }}</h2>
+      <h2>{{ channelStore.getChannelById(channelId)?.name }}</h2>
       <div class="people-list">
         <div
           class="people-item"
-          v-for="p in people"
+          v-for="p in contactStore.contacts"
           :key="p.id"
         >
           <img :src="p.avatar" :alt="p.name" />
@@ -80,12 +91,12 @@ scrollToBottom()
       />
       <span ref="end"></span>
     </div>
-    <footer>
-      <textarea rows="3"></textarea>
-      <button>
+    <form class="footer" @submit.prevent="sendMessage">
+      <textarea rows="3" v-model="message"></textarea>
+      <button type="submit">
         <Icon icon="carbon:send-alt" />
       </button>
-    </footer>
+    </form>
   </div>
 </template>
 
@@ -110,7 +121,7 @@ scrollToBottom()
   .content {
     @apply flex flex-col gap-4 p-4 h-full overflow-y-auto;
   }
-  footer {
+  .footer {
     @apply flex p-2;
     textarea {
       @apply w-full px-2 py-2 resize-none bg-zinc-800 rounded-tl-md rounded-bl-md focus:outline-none;

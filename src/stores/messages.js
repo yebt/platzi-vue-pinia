@@ -105,5 +105,17 @@ export default defineStore(
           .filter((mssg) => !mssg.read).length
       }
     },
+    actions:{
+        addMessage(channelId, message) {
+          this.messages.push({
+            id: this.messages.length + 1,
+            author: 1,
+            message: message,
+            timestamp: new Date().toLocaleTimeString(),
+            channelId: channelId,
+            read: false
+          })
+        }
+    }
   }
 );

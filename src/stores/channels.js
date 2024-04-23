@@ -22,6 +22,9 @@ export default defineStore(
           chnnl.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
         ).map((chnnl) => ({ ...chnnl, messages: messageStore.countUnreadMessagesByChannelId(chnnl.id) }));
       },
+      getChannelById: (state) => (id) => {
+        return state.channels.find((chnnl) => chnnl.id === id)
+      }
     },
   }
 );
